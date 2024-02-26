@@ -51,11 +51,11 @@ spec:
           fi
 
           git clone http://gitea:openshift@$GITEA_HOSTNAME/gitea/lol-champions-app
-          cp -R ocp-dev-101/lol-champions-app/ lol-champions-app/
+          cp -r ocp-dev-101/lol-champions-app/. lol-champions-app
           cd lol-champions-app
           git config user.email "gitea@gitea.com"
           git config user.name "gitea"
-          git add . && git commit -m "Cloned Repository" && git push
+          git add . && git commit -m "Repository cloned from demo source" && git push
           cd ..
           echo "------------------------------"   
 
@@ -72,11 +72,11 @@ spec:
           fi
 
           git clone http://gitea:openshift@$GITEA_HOSTNAME/gitea/lol-champions-deploy
-          cp -R ocp-dev-101/lol-champions-deploy/ lol-champions-deploy/
+          cp -R ocp-dev-101/lol-champions-deploy/. lol-champions-deploy
           cd lol-champions-deploy
           git config user.email "gitea@gitea.com"
           git config user.name "gitea"
-          git add . && git commit -m "Cloned Repository" && git push
+          git add . && git commit -m "Repository cloned from demo source" && git push
           cd ..
           echo "------------------------------"
         imagePullPolicy: Always
