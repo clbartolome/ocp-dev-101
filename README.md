@@ -2,6 +2,9 @@
 
 ## Configuration
 
+Install OpenShift Gitops and Tekton Operators.
+TODO: install using sh script for OpenShift GitOps and use argo for Tekton
+
 ## Demos
 
 ### Demo 1: Run Locally
@@ -77,10 +80,9 @@ podman logs -f lol-app
 podman stop lol-app lol-app-db
 podman ps -a
 podman rm lol-app-db
-
 ```
 
-<!-- ### Demo 2: Run in Openshift (single pod)
+### Demo 2: Run in Openshift (single pod)
 
 Deploy the application on OpenShift as a pod, what is missing here?
 
@@ -96,5 +98,5 @@ NOTE: Dabases is already deployed in the namespace via ArgoCD (reviewed later)
 
 ### Demo 5: Tekton, automate CI
 
-### Demo 6: ArgoCD automate CD -->
+### Demo 6: ArgoCD automate CD
 

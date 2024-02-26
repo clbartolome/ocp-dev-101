@@ -1,0 +1,13 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    description: Route for application's http service.
+    argocd.argoproj.io/sync-wave: "11"
+  labels:
+    app: gitea
+  name: gitea
+  namespace: gitea
+spec:
+  to:
+    name: gitea

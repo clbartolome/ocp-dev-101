@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: gitea-setup-
+  name: configure-gitea
+  namespace: gitea
+  annotations:
+    argocd.argoproj.io/sync-wave: "19"
+  labels:
+      app.kubernetes.io/part-of: gitea
+      name: configure-gitea
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+      - name: git
+        image: quay.io/calopezb/git-utils:1.0.0
+        # TODO: Read CONFIGURATION using a configmap
+        env:
+        - name: GITEA_HOSTNAME
+          value: "gitea.gitea.svc.cluster.local:3000"
+        command:
+        - /bin/sh
+        - '-c'
+        args:
+        - |-
+          pwd
+          mkdir repository
+          cd repository
+          echo "-- Creating gitea user"
+          curl -X POST \
+            -d '{"username":"gitea","password":"openshift","retype":"openshift","email":"gitea@gitea.com","send_notify":false}' \
+            -H "Content-Type: application/json" \
+            http://$GITEA_HOSTNAME/user/sign_up
+
+          echo "-- Creating application source repository"
+          RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" -X POST \
+            -u gitea:openshift \
+            -d '{"auto_init": true,"default_branch": "master","gitignores": "VisualStudioCode","name": "application-source","private": false,"trust_model": "default"}' \
+            -H "Content-Type: application/json" \
+            http://$GITEA_HOSTNAME/api/v1/user/repos)
+
+          if [ "$RESPONSE" != "201" ]; then
+              echo "Error creating application source repository, error code: $RESPONSE"
+              exit 1
+          fi
+
+          git clone http://gitea:openshift@$GITEA_HOSTNAME/gitea/application-source
+          cd application-source
+          git config user.email "gitea@gitea.com"
+          git config user.name "gitea"
+          mkdir .s2i
+          cat <<EOF >>.s2i/environment
+          MAVEN_S2I_ARTIFACT_DIRS=target/quarkus-app
+          S2I_SOURCE_DEPLOYMENTS_FILTER=app lib quarkus quarkus-run.jar
+          JAVA_OPTIONS=-Dquarkus.http.host=0.0.0.0
+          AB_JOLOKIA_OFF=true
+          JAVA_APP_JAR=/deployments/quarkus-run.jar
+          EOF
+          git add . && git commit -m "Added s2i configuration" && git push
+          echo "------------------------------"
+        imagePullPolicy: Always
+      restartPolicy: Never
