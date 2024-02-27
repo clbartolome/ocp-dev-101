@@ -3,5 +3,6 @@ apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
   name: demo-single-pod
+  # TODO: rename to demo-manual-deploy
   annotations:
     argocd.argoproj.io/sync-wave: "0"

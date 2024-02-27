@@ -9,6 +9,8 @@ TODO: install using sh script for OpenShift GitOps and use argo for Tekton
 
 ### Demo 1: Run Locally
 
+In this demo we're going to run locally a Quarkus application.
+
 Take a look at quarkus app *lol-champions-app* and execute the following steps:
 
 - Run tests witn in-memory DB
@@ -64,7 +66,7 @@ podman run -d --name lol-app-db --network=lol-net \
   postgres:10.5
 
 # Build image using a Dockerfile
-mvn clean package -DskipTests
+mvn clean package -DskipTests -Dquarkus.profile=dev-podman
 podman build . -t lol-app:0.0.1
 
 # Review image
@@ -82,15 +84,47 @@ podman ps -a
 podman rm lol-app-db
 ```
 
-### Demo 2: Run in Openshift (single pod)
+### Demo 2: Run in Openshift
 
-Deploy the application on OpenShift as a pod, what is missing here?
+In this demo we're going to manually deploy the application and it's database (ephemeral) in an OCP namespace.
+NOTE: during the demo, review how to do all the steps in the 'developer console' before running the commands.
 
-NOTE: Dabases is already deployed in the namespace via ArgoCD (reviewed later)
+Execute the following steps:
 
-- Upload application image to Quay
-- Create a pod that uses uploaded image
-- 
+- Upload image to Quay
+```sh
+# login into quay
+podman login quay.io
+
+# Tag image on Quay repository and push image
+podman tag lol-app:0.0.1 quay.io/calopezb/lol-app:1.0.0
+podman push quay.io/calopezb/lol-app:1.0.0
+
+# Login into quay and change lol-app 'Repository Visibility' to 'public' - review tags
+```
+
+- Create an ephemeral database
+```sh
+# Login into your terminal with oc login and access demo-single-pod namespace
+oc project demo-single-pod
+
+# Create an ephemeral postgresql db
+oc new-app postgresql-ephemeral \
+  -p DATABASE_SERVICE_NAME=lol-app-db \
+  -p POSTGRESQL_USER=develop \
+  -p POSTGRESQL_PASSWORD=develop \
+  -p POSTGRESQL_DATABASE=lol-app-db
+
+# Deploy lol-app using Quay image
+oc new-app --name=lol-app quay.io/calopezb/lol-app:1.0.0
+
+# Review logs, terminal,...
+
+# Expose SVC to generate a route
+oc expose svc lol-app
+
+# Access app using route
+```
 
 ### Demo 3: Develop application using OpenShift DevSpaces
 
@@ -99,4 +133,10 @@ NOTE: Dabases is already deployed in the namespace via ArgoCD (reviewed later)
 ### Demo 5: Tekton, automate CI
 
 ### Demo 6: ArgoCD automate CD
+
+
+clean
+
+delete image on quay
+delete 
 
