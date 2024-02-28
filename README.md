@@ -148,12 +148,31 @@ oc new-app --name=lol-app \
   --strategy=source --as-deployment-config=false
 
 # Review buildconfig and logs (why is failing)
+oc get pods
+oc logs -f lol-app-xxxxx
 
-# Create configuration map and secret
-oc create cm greet-config --from-literal APP_GREET="Hola desde el configmap"
-oc set env deploy/greet --from cm/greet-config
-oc get cm greet-config -o yaml
+# Create configuration map
+oc create cm lol-app-config --from-literal DB_HOST=lol-app-db --from-literal DB_PORT=5432 --from-literal DB_NAME=lol-app-db
+oc get cm lol-app-config -o yaml
 
+# Create secret
+oc create secret generic lol-app-secured  --from-literal DB_USER=user --from-literal DB_PASS=pass
+oc get secret lol-app-secured -o yaml
+echo cGFzcw== | base64 -d
+
+# Configure cm and secret as environment variables in the deployment
+oc set env deploy/lol-app --from cm/lol-app-config
+oc set env deploy/lol-app --from secret/lol-app-secured
+
+# Review the deployment and the pod
+oc get deploy lol-app -o yaml
+oc get pods
+oc rsh lol-app-xxxxx
+
+
+# Expose service
+oc expose svc lol-app
+oc get route
 ```
 
 

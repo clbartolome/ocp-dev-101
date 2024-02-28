@@ -3,7 +3,7 @@ kind: Kustomization
 
 commonLabels:
   app: lol-app-db
-  app.kubernetes.io/part-of: watches-eshop
+  app.kubernetes.io/part-of: lol-champions
   app.openshift.io/runtime: postgresql
 
 resources:
