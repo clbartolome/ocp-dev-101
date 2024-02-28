@@ -2,8 +2,8 @@
 
 ## Configuration
 
-Install OpenShift Gitops and Tekton Operators.
-TODO: install using sh script for OpenShift GitOps and use argo for Tekton
+Install OpenShift Gitops, Devspaces and Tekton Operators.
+TODO: install using sh script for OpenShift GitOps and use argo for Tekton and Devspaces
 
 ## Demos
 
@@ -129,6 +129,33 @@ oc expose svc lol-app
 ### Demo 3: Develop application using OpenShift DevSpaces
 
 ### Demo 4: Create application using OpenShift s2i
+
+In this demo we'll create the application image using s2i process
+NOTE: Review build procesess on OpenShift and base images
+NOTE: Execute this commands after showing how would it be on the 'Developer Console'
+
+Follow these steps:
+```sh
+# Login into your terminal with oc login and access demo-single-pod namespace
+oc project demo-s2i
+
+# Review image for jdk 17
+oc get is -n openshift | grep jdk-17
+
+# Create application using s2i
+oc new-app --name=lol-app \
+  openshift/ubi8-openjdk-17:1.12~http://gitea.gitea.svc.cluster.local:3000/gitea/lol-champions-app \
+  --strategy=source --as-deployment-config=false
+
+# Review buildconfig and logs (why is failing)
+
+# Create configuration map and secret
+oc create cm greet-config --from-literal APP_GREET="Hola desde el configmap"
+oc set env deploy/greet --from cm/greet-config
+oc get cm greet-config -o yaml
+
+```
+
 
 ### Demo 5: Tekton, automate CI
 
