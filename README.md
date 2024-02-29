@@ -292,9 +292,28 @@ oc delete tekton-overview
 ```
 
 - Review the pipelines created in **demo-tekton** namespace.
-- Configure webhook
-- Make an update in application
+- Retrieve webhook service url:
+```sh
+# Access demo-tekton namespace
+oc project demo-tekton
+
+# Review created service
+oc get svc
+```
+
+- Configure gitea webhooks for application push events in master branch (using installation information values):
+  - Open Gitea and login.
+  - Open `lol-champions-app`
+  - Create a webhook in `Settings > Webhooks > Add Webhook`
+  - Target URL must be *http://el-trigger-build-listener.demo-tekton.svc.cluster.local:8080*
+  - HTTP Method must be `POST`
+  - POST Content Type must be `application/json`
+  - Secret can be any value
+  - Trigger On `Push Events`
+
+- Make an update in application like changing POM version
 - Follow the triggered pipeline in OpsnShift console
+> NOTE: Application will fail to deploy because there is no DB. Challenge yourself and deploy a Postgresql db and connect lol-app using a configurationMap and a secret.
 
 ### Demo 6: ArgoCD automate CD
 

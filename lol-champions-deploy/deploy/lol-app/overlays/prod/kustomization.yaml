@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../base
+
+commonLabels:
+  app: lol-app-prod
+
+patchesStrategicMerge:
+- ./deploy-replicas-patch.yaml
+
+configMapGenerator:
+- name: lol-app-configuration
+  envs:
+  - properties.env
+
+secretGenerator:
+- name: lol-app-secured-configuration
+  envs:
+  - secured.env
+
+images:
+- name: lol-app
+  newName: quay.io/demo-applications/lol-champions
+  newTag: 1.0.0
