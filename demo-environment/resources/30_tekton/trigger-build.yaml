@@ -3,6 +3,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: trigger-build-listener
+  namespace: demo-tekton
 spec:
   triggers:
     - name: github-listener
@@ -25,6 +26,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: trigger-build-binding
+  namespace: demo-tekton
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
@@ -38,6 +40,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: trigger-build-template
+  namespace: demo-tekton
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
@@ -69,8 +72,7 @@ spec:
             value: openjdk-17-ubi8
       pipelineRef:
         name: lol-app-ci
-      taskRunTemplate:
-        serviceAccountName: pipeline
+      serviceAccountName: pipeline
       timeouts:
         pipeline: 1h0m0s
       workspaces:
