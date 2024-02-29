@@ -52,7 +52,7 @@ spec:
     kind: PipelineRun
     metadata:
       generateName: "ci-"
-      namespace: workshop-components
+      namespace: demo-tekton
       labels:
         app.kubernetes.io/instance: ci-pipeline
         tekton.dev/pipeline: ci-pipeline
