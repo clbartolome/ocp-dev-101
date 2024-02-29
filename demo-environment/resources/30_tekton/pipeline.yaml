@@ -1,0 +1,145 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: lol-app
+    app.kubernetes.io/name: lol-app
+    operator.tekton.dev/operand-name: openshift-pipelines-addons
+    pipeline.openshift.io/runtime: java
+    pipeline.openshift.io/runtime-version: openjdk-17-ubi8
+    pipeline.openshift.io/type: kubernetes
+  name: lol-app-ci
+  namespace: demo-tekton
+spec:
+  params:
+    - default: lol-app
+      name: APP_NAME
+      type: string
+    - default: 'http://gitea.gitea.svc.cluster.local:3000/gitea/lol-champions-app'
+      name: GIT_REPO
+      type: string
+    - default: ''
+      name: GIT_REVISION
+      type: string
+    - default: 'image-registry.openshift-image-registry.svc:5000/demo-tekton/lol-app'
+      name: IMAGE_NAME
+      type: string
+    - default: .
+      name: PATH_CONTEXT
+      type: string
+    - default: openjdk-17-ubi8
+      name: VERSION
+      type: string
+        workspace: workspace
+    # ------------ FETCH REPOSITORY ------------ #
+  tasks:
+    - name: fetch-repository
+      params:
+        - name: url
+          value: $(params.GIT_REPO)
+        - name: revision
+          value: $(params.GIT_REVISION)
+        - name: subdirectory
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+    # ------------ UNIT TEST ------------ #
+    - name: unit-test
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: unit-test
+    # ------------ CODE ANALYSIS ------------ #
+    - name: code-analysis
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: code-analysis
+    # ------------ DEPENDENCY CHECK ------------ #
+    - name: dependency-check
+      runAfter:
+        - fetch-repository
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: dependency-check
+    # ------------ PACKAGE APP ------------ #
+    - name: package-app
+      runAfter:
+        - dependency-check
+        - code-analysis
+        - unit-test
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: package-app
+    # ------------ NEXUS UPLOAD ------------ #
+    - name: nexus-upload
+      runAfter:
+        - package-app
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: nexus-upload
+    # ------------ BUILD ------------ #
+    - name: build
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE_NAME)
+        - name: TLSVERIFY
+          value: 'false'
+        - name: PATH_CONTEXT
+          value: $(params.PATH_CONTEXT)
+        - name: VERSION
+          value: $(params.VERSION)
+      runAfter:
+        - nexus-upload
+      taskRef:
+        kind: ClusterTask
+        name: s2i-java
+      workspaces:
+        - name: source
+          workspace: workspace
+    # ------------ IMAGE SCAN ------------ #
+    - name: image-scan
+      runAfter:
+        - build
+      taskRef:
+        kind: Task
+        name: mock
+      params:
+        - name: MOCK_MSG
+          value: image-scan
+    # ------------ DEPLOY ------------ #
+    - name: deploy
+      params:
+        - name: SCRIPT
+          value: oc rollout status deploy/$(params.APP_NAME)
+      runAfter:
+        - image-scan
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+  workspaces:
+    - name: workspace

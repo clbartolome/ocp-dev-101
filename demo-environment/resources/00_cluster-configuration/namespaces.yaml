@@ -17,6 +17,13 @@ metadata:
 apiVersion: project.openshift.io/v1
 kind: Project
 metadata:
+  name: demo-tekton
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
   name: demo-dev
   annotations:
     argocd.argoproj.io/sync-wave: "0"

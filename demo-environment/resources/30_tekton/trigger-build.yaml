@@ -1,0 +1,88 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: trigger-build-listener
+spec:
+  triggers:
+    - name: github-listener
+      interceptors:
+        - ref:
+            name: github
+            kind: ClusterInterceptor
+            apiVersion: triggers.tekton.dev
+          params:
+            - name: eventTypes
+              value:
+                - push
+      bindings:
+        - kind: TriggerBinding
+          ref: trigger-build-binding
+      template:
+        ref: trigger-build-template
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: trigger-build-binding
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  params:
+  - name: gitRepositoryUrl
+    value: $(body.repository.clone_url)
+  - name: gitRevision
+    value: $(body.after)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: trigger-build-template
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  params:
+  - name: gitRepositoryUrl
+  - name: gitRevision
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: "ci-"
+      namespace: workshop-components
+      labels:
+        app.kubernetes.io/instance: ci-pipeline
+        tekton.dev/pipeline: ci-pipeline
+    spec:
+      params:
+          - name: APP_NAME
+            value: lol-app
+          - name: GIT_REPO
+            value: 'http://gitea.gitea.svc.cluster.local:3000/gitea/lol-champions-app'
+          - name: GIT_REVISION
+            value: ''
+          - name: IMAGE_NAME
+            value: 'image-registry.openshift-image-registry.svc:5000/demo-tekton/lol-app'
+          - name: PATH_CONTEXT
+            value: .
+          - name: VERSION
+            value: openjdk-17-ubi8
+      pipelineRef:
+        name: lol-app-ci
+      taskRunTemplate:
+        serviceAccountName: pipeline
+      timeouts:
+        pipeline: 1h0m0s
+      workspaces:
+        - name: workspace
+          volumeClaimTemplate:
+            metadata:
+              labels:
+                tekton.dev/pipeline: lol-app
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+            status: {}
