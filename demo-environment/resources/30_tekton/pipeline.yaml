@@ -31,7 +31,8 @@ spec:
     - default: openjdk-17-ubi8
       name: VERSION
       type: string
-  workspace: workspace
+  workspaces: 
+    - workspace
     # ------------ FETCH REPOSITORY ------------ #
   tasks:
     - name: fetch-repository
