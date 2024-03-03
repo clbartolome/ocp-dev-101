@@ -3,7 +3,7 @@
   "owner": "calopezb@redhat.com",
   "argo_config": {
     "branch": "master",
-    "path": "deploy/lol-app-db",
+    "path": "deploy/lol-app-db/base",
     "prune": true,
     "selfHeal": true
   },

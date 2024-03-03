@@ -41,3 +41,10 @@ metadata:
   name: demo-prod
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+---
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: demo-prod-db
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
