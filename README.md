@@ -5,6 +5,27 @@
 Install OpenShift Gitops, Devspaces and Tekton Operators.
 TODO: install using sh script for OpenShift GitOps and use argo for Tekton and Devspaces
 
+### LOL Champios Application main image
+
+Apart from the images created in this demo there is a main image for LOL Champions application in: *quay.io/demo-applications/lol-champions*
+
+This images has been built using OpenShift S2I process and the following commands to pull from OpenShift internal registry and upload to Quay:
+
+```sh
+# Expose internal registry
+oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+
+# Get Openshift hostn and login into the registry
+HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
+podman login -u <user> -p $(oc whoami -t) $HOST
+
+# Pull and push the image into Quay
+podman pull $HOST/demo-s2i/lol-app --tls-verify=false
+podman images
+podman tag $HOST/demo-s2i/lol-app:latest quay.io/demo-applications/lol-champions:1.0.0
+podman push quay.io/demo-applications/lol-champions:1.0.0
+```
+
 ## Demos
 
 ### Demo 1: Run Locally
@@ -45,6 +66,7 @@ podman run -d --name lol-app-db \
 podman ps
 ```
 - Run application as a process
+
 ```sh
 mvn compile quarkus:dev
 ```
@@ -138,7 +160,7 @@ Follow these steps:
 
 - Login and review available s2i images:
 ```sh
-# Login into your terminal with oc login and access demo-single-pod namespace
+# Login into your terminal with oc login and access demo-s2i namespace
 oc project demo-s2i
 
 # Review image for jdk 17
@@ -154,6 +176,7 @@ oc new-app --name=lol-app \
 
 # Review buildconfig and logs (why is failing)
 oc get pods
+oc logs lol-app-1-build -f
 oc logs -f lol-app-xxxxx
 ```
 
@@ -317,9 +340,145 @@ oc get svc
 
 ### Demo 6: ArgoCD automate CD
 
+For the last demo we're going to use 3 logical environments for our application:
+- demo-dev (empty)
+- demo-test (1 replica of lol-app - handled by ArgoCD)
+- demo-prod (3 replicas of lol-app - handled by ArgoCD)
 
-clean
+> NOTE: All environments have a DB already deployed (Prod database is in a separate namespace)
 
-delete image on quay
-delete 
+Follow these instructions:
+- To create *dev* resources use the deployment done in *demo-s2i*:
+```sh
+# Login into your terminal with oc login and access demo-s2i namespace
+oc project demo-s2i
+```
+- Clone lol-champions-deploy repository and review it
+```sh
+# Get Gitea URL
+HOST=http://$(oc get route gitea -n gitea --template='{{ .spec.host }}')
+git clone $HOST/gitea/lol-champions-deploy
+
+# Reiview
+cd lol-champions-deploy/deploy
+tree lol-app
+```
+- Create a new folder for dev
+> NOTE: this could be deploy as part of the kustomization done for test and prod, but we're going to use a separate directory for demo purpose
+```sh
+mkdir argo-demo
+```
+
+- Get application deployment
+```sh
+oc get deploy lol-app -o yaml > argo-demo/deployment.yaml
+vi argo-demo/deployment.yaml
+```
+  Cleanup deployment:
+  - Delete everything in `metadata` but `metadata.name` , `metadata.label` and `metadata.annotations` (connect to)
+  - Delete everything in `spec` but:
+    - `spec.replicas`
+    - `spec.template`
+  - Delete everything in `spec.template` but:
+    - `spec.replicas`
+    - `spec.template`
+  - Delete everything in `spec.template.spec.containers` but:
+    - `spec.template.spec.containers.name`
+    - `spec.template.spec.containers.image` (replace by `quay.io/demo-applications/lol-champions:1.0.0`)
+    - `spec.template.spec.containers.imagePullPolicy`
+    - `spec.template.spec.containers.livenessProbe`
+    - `spec.template.spec.containers.ports` leave just 8080
+    - `spec.template.spec.containers.readinessProbe` leave just 8080
+  - Delete everything in `status`
+  
+- Download service:
+```sh
+oc get svc lol-app -o yaml > argo-demo/service.yaml
+vi argo-demo/service.yaml
+```
+
+  Cleanup service:
+  - Delete everything in `metadata` but `metadata.name`
+  - Delete everything in `spec` but `spec.ports` and leave just 8080
+  - Delete everything in `status`
+
+- Download route:
+```sh
+oc get route lol-app -o yaml > argo-demo/route.yaml
+vi argo-demo/route.yaml
+```
+
+  Cleanup route
+  - Delete everything in `metadata` but `metadata.name`
+  - Delete everything in `spec` but:
+    - `spec.to`
+    - `spec.port`
+  - Delete everything in `status`
+
+- Download cm:
+```sh
+oc get cm lol-app-config -o yaml > argo-demo/cm.yaml 
+vi argo-demo/cm.yaml
+```
+
+  Cleanup cm
+  - Delete everything in `metadata` but `metadata.name`
+  - Delete everything in `status`
+
+- Download secret:
+```sh
+oc get secret lol-app-secured -o yaml > argo-demo/secret.yaml
+vi argo-demo/secret.yaml
+```
+
+  Cleanup secret:
+  - Delete everything in `metadata` but `metadata.name`
+  - Delete everything in `status`
+
+- Push changes
+```sh
+# Add files
+git add .
+git status
+
+# Commit and push
+git commit -m "included dev deployment"
+git push
+```
+- Create ArgoCD application
+  - Access argoCD
+  - Click **+ NEW APP** button
+  - Use this values:
+    - Application Name: `lol-app-dev`
+    - Project Name: `default`
+    - Sync Policy: Automatic (with self heal)
+    - Source:
+      - Repository URL: `http://gitea.gitea.svc.cluster.local:3000/gitea/lol-champions-deploy`
+      - Revision: `master`
+      - Path: `deploy/argo-demo`
+    - Destination:
+      - Cluster URL: `https://kubernetes.default.svc`
+      - Namespace: `demo-dev`
+- Review deployment and application
+- Test deployment is working fine
+- Prod deployment is failing, why?
+  - Looks like App is not able to connect with the DB
+  - Review **prod** deployment, there is a network policy that denies all external traffic into the DB namespace
+  - Modify the existing NP:
+  ```yaml
+  kind: NetworkPolicy
+  apiVersion: networking.k8s.io/v1
+  metadata:
+    name: deny-by-default
+  spec:
+    podSelector: {}
+    policyTypes:
+      - Ingress
+    ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: demo-prod
+  ```
+
 
