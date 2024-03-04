@@ -49,20 +49,20 @@ components:
     volume: {}
 commands:
   - id: init-compile
-    label: 1. Package the application
     exec:
+      label: 1. Package the application
       component: tools
       commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository package -DskipTests'
       workingDir: ${PROJECT_SOURCE}/lol-champions-app
   - id: unit-test
-    label: 2. Run unit tests
     exec:
+      label: 2. Run unit tests
       component: tools
       commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository test'
       workingDir: ${PROJECT_SOURCE}/lol-champions-app
   - id: dev-run
-    label: 3. Run Quarkus dev mode
     exec:
+      label: 3. Run Quarkus dev mode
       component: tools
       commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0'
       hotReloadCapable: true
