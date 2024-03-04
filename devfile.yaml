@@ -1,8 +1,8 @@
 schemaVersion: 2.2.0
 metadata:
-  name: lol-champions
+  name: lol-champions-
 components:
-  - name: universal-developer-image
+  - name: dev
     container:
       image: registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
       cpuLimit: "4"
@@ -25,3 +25,22 @@ components:
   - name: m2
     volume:
       size: 1G
+commands:	
+  - id: 1-package	
+    exec:	
+      label: "1. Execute tests"
+      component: dev	
+      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
+      commandLine: mvn tests	
+      group:	
+        kind: build	
+        isDefault: true	
+  - id: 2-startdev	
+    exec:	
+      label: "2. Start Development mode (Hot reload + debug)"	
+      component: dev	
+      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
+      commandLine: mvn compile quarkus:dev	
+      group:	
+        kind: run	
+        isDefault: true
