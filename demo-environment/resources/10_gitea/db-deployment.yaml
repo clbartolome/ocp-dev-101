@@ -28,7 +28,7 @@ spec:
       containers:
       - name: postgresql
         imagePullPolicy: Always
-        image: registry.redhat.io/rhel8/postgresql-15@sha256:aaf4d9767040dfd9586c48930c1e5b164f0e611361f951933f99149a8d9b3fe0
+        image: image-registry.openshift-image-registry.svc:5000/openshift/postgresql:10-el8
         env:
         - name: POSTGRESQL_USER
           value: gitea

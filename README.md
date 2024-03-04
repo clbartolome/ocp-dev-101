@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Install OpenShift Gitops, Devspaces and Tekton Operators.
+Install OpenShift Gitops, Devspaces and Pipelines Operators.
 TODO: install using sh script for OpenShift GitOps and use argo for Tekton and Devspaces
 
 ### LOL Champios Application main image
