@@ -24,35 +24,49 @@ components:
       endpoints:
         - name: http-quarkus
           targetPort: 8080
+  - name: postgres
+    container:
+      image: postgres
+      env:
+        - name: PGDATA
+          value: /tmp/pgdata
+        - name: POSTGRES_USER
+          value: develop
+        - name: POSTGRES_PASSWORD
+          value: develop
+        - name: POSTGRES_DB
+          value: lol-app-db
+      memoryLimit: 512Mi
+      mountSources: true
+      sourceMapping: /projects
+      volumeMounts:
+        - name: postgresql-data
+          path: /var/lib/postgresql/data
   - name: m2
     volume:
       size: 1Gi
+  - name: postgresql-data
+    volume: {}
 commands:
   - id: init-compile
+    label: 1. Package the application
     exec:
       component: tools
-      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository compile -DskipTests'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository package -DskipTests'
       workingDir: ${PROJECT_SOURCE}/lol-champions-app
   - id: unit-test
+    label: 2. Run unit tests
     exec:
       component: tools
-      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository tests'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository test'
       workingDir: ${PROJECT_SOURCE}/lol-champions-app
   - id: dev-run
+    label: 3. Run Quarkus dev mode
     exec:
       component: tools
-      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager'
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0'
       hotReloadCapable: true
       group:
         kind: run
-        isDefault: true
-      workingDir: ${PROJECT_SOURCE}/lol-champions-app
-  - id: dev-debug
-    exec:
-      component: tools
-      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Ddebug=${DEBUG_PORT}'
-      hotReloadCapable: true
-      group:
-        kind: debug
         isDefault: true
       workingDir: ${PROJECT_SOURCE}/lol-champions-app
