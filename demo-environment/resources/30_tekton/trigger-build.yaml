@@ -4,6 +4,8 @@ kind: EventListener
 metadata:
   name: trigger-build-listener
   namespace: demo-tekton
+  annotations:
+    argocd.argoproj.io/sync-wave: "35"
 spec:
   triggers:
     - name: github-listener
@@ -28,7 +30,7 @@ metadata:
   name: trigger-build-binding
   namespace: demo-tekton
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "30"
 spec:
   params:
   - name: gitRepositoryUrl
@@ -42,7 +44,7 @@ metadata:
   name: trigger-build-template
   namespace: demo-tekton
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "30"
 spec:
   params:
   - name: gitRepositoryUrl

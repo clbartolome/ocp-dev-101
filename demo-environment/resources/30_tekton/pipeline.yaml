@@ -11,6 +11,8 @@ metadata:
     pipeline.openshift.io/type: kubernetes
   name: lol-app-ci
   namespace: demo-tekton
+  annotations:
+    argocd.argoproj.io/sync-wave: "38"
 spec:
   params:
     - default: lol-app
