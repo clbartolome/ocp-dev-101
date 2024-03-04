@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: demo-environment
-  namespace: openshift-gitops-operator
+  namespace: openshift-gitops
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -15,5 +15,5 @@ spec:
       recurse: true
   destination:
     server: https://kubernetes.default.svc
-    namespace: openshift-gitops-operator
+    namespace: openshift-gitops
   syncPolicy: {}
