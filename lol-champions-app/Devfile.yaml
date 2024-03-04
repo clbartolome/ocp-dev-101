@@ -1,264 +1,55 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.2.0
 metadata:
-  attributes:
-    metadata-name-field: generateName
-    metadata-name-original-value: quarkus-app
-  name: quarkus-app
-  namespace: calopezb-devspaces
-attributes:
-  che-theia.eclipse.org/sidecar-policy: mergeImage
+  name: lol-champions
 projects:
-  - attributes: {}
-    name: quarkus-app
-    git:
+  - git:
       remotes:
-        origin: https://github.com/clbartolome/quarkus-app.git
+        origin: https://github.com/clbartolome/ocp-dev-101
+    name: lol-champions
 components:
   - name: universal-developer-image
     container:
       image: registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
-commands: []
-
-apiVersion: workspace.devfile.io/v1alpha2
-kind: DevWorkspace
-metadata:
-  annotations:
-    che.eclipse.org/che-editor: che-incubator/che-code/latest
-    che.eclipse.org/devfile: |
-      schemaVersion: 2.1.0
-      metadata:
-        name: quarkus-quickstart
-      components:
-        - name: tools
-          container:
-            image: registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
-            env:
-              - name: QUARKUS_HTTP_HOST
-                value: 0.0.0.0
-            endpoints:
-              - exposure: none
-                name: debug
-                protocol: tcp
-                targetPort: 5005
-              - exposure: public
-                name: hello-greeting-endpoint
-                protocol: https
-                targetPort: 8080
-                path: /hello/greeting/devspaces-user
-            volumeMounts:
-              - name: m2
-                path: /home/user/.m2
-            cpuLimit: '4'
-            cpuRequest: '1'
-            memoryLimit: 8G
-            memoryRequest: 4G
-            mountSources: true
+      env:
+        - name: QUARKUS_HTTP_HOST
+          value: 0.0.0.0
+      endpoints:
+        - exposure: none
+          name: debug
+          protocol: tcp
+          targetPort: 5005
+        - exposure: public
+          name: hello-greeting-endpoint
+          protocol: https
+          targetPort: 8080
+          path: /hello/greeting/devspaces-user
+      volumeMounts:
         - name: m2
-          volume:
-            size: 1G
-      commands:
-        - id: 1-package
-          exec:
-            label: 1. Package the application
-            component: tools
-            workingDir: ${PROJECTS_ROOT}/quarkus-quickstarts/getting-started
-            commandLine: mvn package
-            group:
-              kind: build
-              isDefault: true
-        - id: 2-startdev
-          exec:
-            label: 2. Start Development mode (Hot reload + debug)
-            component: tools
-            workingDir: ${PROJECTS_ROOT}/quarkus-quickstarts/getting-started
-            commandLine: mvn compile quarkus:dev
-            group:
-              kind: run
-              isDefault: true
-      projects:
-        - name: quarkus-quickstarts
-          zip:
-            location: 'http://devfile-registry.openshift-operators.svc:8080/resources/v2/quarkus-quickstarts.zip'
-    che.eclipse.org/devfile-source: |
-      factory:
-        params: >-
-          devWorkspace=https://devspaces.apps.ocp4cluster.ocp4.cfernand.com/devfile-registry/devfiles/java-maven-quarkus__quarkus-quickstarts/devworkspace-che-code-latest.yaml&storageType=per-user&url=https://github.com/devspaces-samples/quarkus-quickstarts/tree/devspaces-3.11-rhel-8
-    che.eclipse.org/last-updated-timestamp: '2024-02-28T08:39:18.913Z'
-  resourceVersion: '154598613'
-  name: quarkus-quickstart
-  uid: 144e9e3e-e8a7-403b-80e2-55d411b4fbbf
-  creationTimestamp: '2024-02-28T08:39:18Z'
-  generation: 5
-  managedFields:
-    - apiVersion: workspace.devfile.io/v1alpha2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:annotations':
-            .: {}
-            'f:che.eclipse.org/che-editor': {}
-            'f:che.eclipse.org/devfile': {}
-            'f:che.eclipse.org/devfile-source': {}
-            'f:che.eclipse.org/last-updated-timestamp': {}
-        'f:spec':
-          .: {}
-          'f:contributions': {}
-          'f:routingClass': {}
-          'f:template':
-            .: {}
-            'f:attributes':
-              .: {}
-              'f:controller.devfile.io/devworkspace-config':
-                .: {}
-                'f:name': {}
-                'f:namespace': {}
-              'f:controller.devfile.io/scc': {}
-              'f:controller.devfile.io/storage-type': {}
-            'f:commands': {}
-            'f:components': {}
-            'f:projects': {}
-      manager: unknown
-      operation: Update
-      time: '2024-02-28T08:39:19Z'
-    - apiVersion: workspace.devfile.io/v1alpha2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:finalizers':
-            .: {}
-            'v:"rbac.controller.devfile.io"': {}
-            'v:"storage.controller.devfile.io"': {}
-        'f:spec':
-          'f:started': {}
-      manager: devworkspace-controller
-      operation: Update
-      time: '2024-02-28T08:39:21Z'
-    - apiVersion: workspace.devfile.io/v1alpha2
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:status':
-          .: {}
-          'f:conditions': {}
-          'f:devworkspaceId': {}
-          'f:mainUrl': {}
-          'f:message': {}
-          'f:phase': {}
-      manager: devworkspace-controller
-      operation: Update
-      subresource: status
-      time: '2024-02-28T08:39:22Z'
-  namespace: calopezb-devspaces
-  finalizers:
-    - storage.controller.devfile.io
-    - rbac.controller.devfile.io
-  labels:
-    controller.devfile.io/creator: a116a78a-fa95-4280-96a5-2d3764643254
-spec:
-  contributions:
-    - kubernetes:
-        name: che-code-quarkus-quickstart
-      name: editor
-  routingClass: che
-  started: false
-  template:
-    attributes:
-      controller.devfile.io/devworkspace-config:
-        name: devworkspace-config
-        namespace: openshift-operators
-      controller.devfile.io/scc: container-build
-      controller.devfile.io/storage-type: per-user
-    commands:
-      - exec:
-          commandLine: mvn package
-          component: tools
-          group:
-            isDefault: true
-            kind: build
-          label: 1. Package the application
-          workingDir: '${PROJECTS_ROOT}/quarkus-quickstarts/getting-started'
-        id: 1-package
-      - exec:
-          commandLine: 'mvn compile quarkus:dev'
-          component: tools
-          group:
-            isDefault: true
-            kind: run
-          label: 2. Start Development mode (Hot reload + debug)
-          workingDir: '${PROJECTS_ROOT}/quarkus-quickstarts/getting-started'
-        id: 2-startdev
-    components:
-      - container:
-          cpuRequest: '1'
-          env:
-            - name: QUARKUS_HTTP_HOST
-              value: 0.0.0.0
-          memoryRequest: 4G
-          sourceMapping: /projects
-          cpuLimit: '4'
-          volumeMounts:
-            - name: m2
-              path: /home/user/.m2
-          memoryLimit: 8G
-          image: >-
-            registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
-          endpoints:
-            - exposure: none
-              name: debug
-              protocol: tcp
-              targetPort: 5005
-            - exposure: public
-              name: hello-greeting-endpoint
-              path: /hello/greeting/devspaces-user
-              protocol: https
-              targetPort: 8080
-          mountSources: true
-        name: tools
-      - name: m2
-        volume:
-          size: 1G
-    projects:
-      - name: quarkus-quickstarts
-        zip:
-          location: >-
-            http://devfile-registry.openshift-operators.svc:8080/resources/v2/quarkus-quickstarts.zip
-status:
-  conditions:
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      message: >-
-        Error creating DevWorkspace deployment: Detected unrecoverable event
-        FailedScheduling: 0/5 nodes are available: 5 Insufficient cpu.
-        preemption: 0/5 nodes are available: 5 No preemption victims found for
-        incoming pod...
-      reason: InfrastructureFailure
-      status: 'True'
-      type: FailedStart
-    - lastTransitionTime: '2024-02-28T08:39:22Z'
-      message: Workspace stopped due to error
-      status: 'False'
-      type: Started
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: DevWorkspaceResolved
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: StorageReady
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: RoutingReady
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: ServiceAccountReady
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: PullSecretsReady
-    - lastTransitionTime: '2024-02-28T08:39:21Z'
-      status: Unknown
-      type: DeploymentReady
-  devworkspaceId: workspace144e9e3ee8a7403b
-  mainUrl: >-
-    https://devspaces.apps.ocp4cluster.ocp4.cfernand.com/calopezb/quarkus-quickstart/3100/
-  message: >-
-    Error creating DevWorkspace deployment: Detected unrecoverable event
-    FailedScheduling: 0/5 nodes are available: 5 Insufficient cpu. preemption:
-    0/5 nodes are available: 5 No preemption victims found for incoming pod...
-  phase: Failed
+          path: /home/user/.m2
+      cpuLimit: '4'
+      cpuRequest: '1'
+      memoryLimit: 8G
+      memoryRequest: 4G
+      mountSources: true
+  - name: m2
+    volume:
+      size: 1G
+commands:	
+  - id: 1-package	
+    exec:	
+      label: 1. Execute tests	
+      component: tools	
+      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
+      commandLine: mvn tests	
+      group:	
+        kind: build	
+        isDefault: true	
+  - id: 2-startdev	
+    exec:	
+      label: 2. Start Development mode (Hot reload + debug)	
+      component: tools	
+      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
+      commandLine: mvn compile quarkus:dev	
+      group:	
+        kind: run	
+        isDefault: true
