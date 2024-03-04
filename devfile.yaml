@@ -5,8 +5,8 @@ components:
   - name: universal-developer-image
     container:
       image: registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
-      cpuLimit: 4
-      cpuRequest: 1
+      cpuLimit: "4"
+      cpuRequest: "1"
       memoryLimit: 8G
       memoryRequest: 4G
       mountSources: true
