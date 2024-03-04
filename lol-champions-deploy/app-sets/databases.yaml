@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: lol-champions-databases
-  namespace: openshift-gitops
+  namespace: openshift-gitops-operator
 spec:
   generators:
     - git:
