@@ -1,11 +1,6 @@
 schemaVersion: 2.2.0
 metadata:
   name: lol-champions
-projects:
-  - git:
-      remotes:
-        origin: https://github.com/clbartolome/ocp-dev-101
-    name: lol-champions
 components:
   - name: universal-developer-image
     container:
@@ -34,22 +29,3 @@ components:
   - name: m2
     volume:
       size: 1G
-commands:	
-  - id: 1-package	
-    exec:	
-      label: "1. Execute tests"
-      component: tools	
-      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
-      commandLine: mvn tests	
-      group:	
-        kind: build	
-        isDefault: true	
-  - id: 2-startdev	
-    exec:	
-      label: "2. Start Development mode (Hot reload + debug)"	
-      component: tools	
-      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
-      commandLine: mvn compile quarkus:dev	
-      group:	
-        kind: run	
-        isDefault: true
