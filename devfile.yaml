@@ -16,9 +16,9 @@ components:
       endpoints:
         - exposure: public
           name: lol-app-ui
-          protocol: https
+          protocol: http
           targetPort: 8080
-          path: /hello/greeting/devspaces-user
+          path: /
       volumeMounts:
         - name: m2
           path: /home/user/.m2
@@ -26,10 +26,21 @@ components:
     volume:
       size: 1G
 commands:
-  - id: 1-package	
+  - id: package-the-application
     exec:
-      label: "1. Execute tests"
-      component: dev
-      workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
-      commandLine: |
-        mvn clean tests
+      label: 1. Package the application
+      component: tools
+      workingDir: '${PROJECTS_ROOT}/lol-champions/lol-champions-app'
+      commandLine: mvn package
+      group:
+        kind: build
+        isDefault: true
+  - id: 2-start-dev
+    exec:
+      label: 2. Start Quarkus in dev mode (hot deploy + debug)
+      component: tools
+      commandLine: 'mvn compile quarkus:dev'
+      workingDir: '${PROJECTS_ROOT}/lol-champions/lol-champions-app'
+      group:
+        kind: run
+        isDefault: true
