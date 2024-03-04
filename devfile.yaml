@@ -10,6 +10,11 @@ components:
   - name: universal-developer-image
     container:
       image: registry.redhat.io/devspaces/udi-rhel8@sha256:7e942155ebd808256e34a9411b85e41ae41d771353146cf6c15ed0b6bd4caacd
+      cpuLimit: 4
+      cpuRequest: 1
+      memoryLimit: 8G
+      memoryRequest: 4G
+      mountSources: true
       env:
         - name: QUARKUS_HTTP_HOST
           value: 0.0.0.0
@@ -26,18 +31,13 @@ components:
       volumeMounts:
         - name: m2
           path: /home/user/.m2
-      cpuLimit: '4'
-      cpuRequest: '1'
-      memoryLimit: 8G
-      memoryRequest: 4G
-      mountSources: true
   - name: m2
     volume:
       size: 1G
 commands:	
   - id: 1-package	
     exec:	
-      label: 1. Execute tests	
+      label: "1. Execute tests"
       component: tools	
       workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
       commandLine: mvn tests	
@@ -46,7 +46,7 @@ commands:
         isDefault: true	
   - id: 2-startdev	
     exec:	
-      label: 2. Start Development mode (Hot reload + debug)	
+      label: "2. Start Development mode (Hot reload + debug)"	
       component: tools	
       workingDir: ${PROJECTS_ROOT}/lol-champions/lol-champions-app	
       commandLine: mvn compile quarkus:dev	
