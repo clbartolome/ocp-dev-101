@@ -24,6 +24,10 @@ components:
         - name: lol-app-ui
           targetPort: 8080
           protocol: http
+        - name: lol-app-health
+          targetPort: 8080
+          protocol: http
+          path: /q/health/live
   - name: postgres
     container:
       image: postgres
