@@ -7,9 +7,9 @@ TODO: install using sh script for OpenShift GitOps and use argo for Tekton and D
 
 ### LOL Champios Application main image
 
-Apart from the images created in this demo there is a main image for LOL Champions application in: *quay.io/demo-applications/lol-champions*
+Apart from the images created in this demo, there is a main image for LOL Champions application in: *quay.io/demo-applications/lol-champions*
 
-This images has been built using OpenShift S2I process and the following commands to pull from OpenShift internal registry and upload to Quay:
+The image has been built using OpenShift S2I process and the following commands to pull from OpenShift internal registry and upload to Quay:
 
 ```sh
 # Expose internal registry
@@ -34,12 +34,23 @@ In this demo we're going to run locally a Quarkus application.
 
 Take a look at quarkus app *lol-champions-app* and execute the following steps:
 
+- Go to Gitea Namespace and open URL. Login using credentials gitea/openshift
+- Clone gitea lol-champions app repository and open it
+```sh
+# Create a temporary folder
+mkdir ~/Desktop/deleteme/demo
+cd ~/Desktop/deleteme/demo
+
+# Clone repo
+git clone <gitea_url>/gitea/lol-champions-app
+
+# Open editor
+code lol-champions-app
+```
+- Review code (pom, code, properties, tests)
 - Run tests witn in-memory DB
 ```sh
-# Review Quarkus APP code
-
 # App directory
-# TODO: USE GITEA REFERENCE
 cd lol-champions-app
 
 # Run tests
@@ -70,6 +81,21 @@ podman ps
 ```sh
 mvn compile quarkus:dev
 ```
+- Validate on a web browser:
+  - root
+  - /q/health/live
+  - wrong url to see the error dev page
+  - Make a change to se how is automatically reloaded. For example add a rest endpoint in ChampionResource:
+  ```java
+  @GET
+  @Path("/test")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getTest() {
+
+    return Response.ok("everything is fine").build();
+  }
+  ```
+  - Revert changes
 - Build image and run as a container
 ```sh
 # Stop and remove postgres db
@@ -87,7 +113,10 @@ podman run -d --name lol-app-db --network=lol-net \
   -p 5432:5432 \
   postgres:10.5
 
-# Build image using a Dockerfile
+# Check DB is running
+podman ps
+
+# Build image using a Dockerfile (review docker file while building)
 mvn clean package -DskipTests -Dquarkus.profile=dev-podman
 podman build . -t lol-app:0.0.1
 
@@ -106,7 +135,35 @@ podman ps -a
 podman rm lol-app-db
 ```
 
-### Demo 2: Run in Openshift
+### Demo 2: Develop application using OpenShift DevSpaces
+
+In this demo we're goint to review how DevSpaces can simplify the developmemnt process by integrating all required integrations and tools.
+
+- Review Application *devfile*
+- Go to OpenShift and open quick access link to *Red Hat OpenShift DevSpaces
+- Login with your OCP user
+- Click *Add WorkSpace*
+- Introduce the repository URL - `https://github.com/clbartolome/ocp-dev-101` - Create & Open
+- Wait until devspace is ready and review:
+  - Review the code + git
+  - Review tasks (F1 - Tasks:run tasks - devfile)
+  - Review pod to understand there is a local Postgresql instance:
+  ```sh
+  # Open namespace
+  oc project <user>-devspaces
+  
+  # Review pods
+  oc get pods
+  oc describe pod workspacesxxxxxx
+
+  # Open logs for postgres
+  oc get logs workspacesxxxxxx -c postgres
+  ```
+  - Review dev:quarkus and open endpoints
+  - Stop/Delete namespace
+
+
+### Demo 3: Run in Openshift
 
 In this demo we're going to manually deploy the application and it's database (ephemeral) in an OCP namespace.
 > NOTE: during the demo, review how to do all the steps in the 'developer console' before running the commands.
@@ -119,6 +176,7 @@ Execute the following steps:
 podman login quay.io
 
 # Tag image on Quay repository and push image
+podman images
 podman tag lol-app:0.0.1 quay.io/calopezb/lol-app:1.0.0
 podman push quay.io/calopezb/lol-app:1.0.0
 
@@ -147,8 +205,6 @@ oc expose svc lol-app
 
 # Access app using route
 ```
-
-### Demo 3: Develop application using OpenShift DevSpaces
 
 ### Demo 4: Create application using OpenShift s2i
 
@@ -225,18 +281,21 @@ oc annotate deploy lol-app app.openshift.io/connects-to='[{"apiVersion":"apps/v1
 In this demo we're going to perfom a basic review of how Tekton works and review an example of a CI pipieline.
 > NOTE: tkn client required!
 
-- Create a namespace:
+- Create a namespace and a folder locally:
 ```sh
 oc new-project tekton-overview
+
+mkdir ~/Desktop/deleteme/tekton
+cd ~/Desktop/deleteme/tekton
 ```
 
 - Create a task for printing a message:
 ```sh
 cat << EOF | oc apply -f  -
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: demo-task
+  name: demo-task-asd
 spec:
   params:
     - name: MESSAGE
@@ -246,12 +305,12 @@ spec:
     - name: print-message
       image: registry.access.redhat.com/ubi8/ubi-minimal:8.3
       script: |
-        echo $(params.MESSAGE)
+        echo "$(params.MESSAGE)"
     - name: get-date
       image: registry.access.redhat.com/ubi8/ubi-minimal:8.3
       script: |
-        DATE=$(date)
-        echo $DATE > $(results.MESSAGE_DATE.path)
+        DATE="$(date)"
+        echo $DATE > "$(results.MESSAGE_DATE.path)"
         echo $DATE
 EOF
 ```
