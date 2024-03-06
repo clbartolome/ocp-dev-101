@@ -5,8 +5,6 @@ metadata:
   namespace: gitea
   annotations:
     argocd.argoproj.io/sync-wave: "12"
-    image.openshift.io/triggers: >-
-        [{"from":{"kind":"ImageStreamTag","name":"postgresql:latest", "namespace":"openshift"},"fieldPath":"spec.template.spec.containers[?(@.name==\"postgresql\")].image"}]
   labels:
     app: gitea
     app.kubernetes.io/component: database
