@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: postgresql
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         image: image-registry.openshift-image-registry.svc:5000/openshift/postgresql:10-el8
         env:
         - name: POSTGRESQL_USER
