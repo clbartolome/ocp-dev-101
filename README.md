@@ -185,8 +185,8 @@ podman push quay.io/calopezb/lol-app:1.0.0
 
 - Create an ephemeral database
 ```sh
-# Login into your terminal with oc login and access demo-single-pod namespace
-oc project demo-single-pod
+# Login into your terminal with oc login and access demo-manual-deploy namespace
+oc project demo-manual-deploy
 
 # Create an ephemeral postgresql db
 oc new-app postgresql-ephemeral \
